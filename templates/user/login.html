@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Meta Tag -->
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Login Page</title>
+
+        <!-- Bootstrap CSS -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous"
+        />
+
+        <!-- Jquery -->
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+        <style>
+            body {
+                background-color: #fafafa;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .login-form {
+                background-color: white;
+                width: 350px;
+                padding: 20px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+            }
+
+            .form-control {
+                height: 36px;
+                font-size: 14px;
+            }
+
+            .form-floating {
+                margin-bottom: 16px;
+            }
+
+            .btn-primary,
+            .btn-facebook {
+                height: 36px;
+                line-height: 23px;
+                width: 100%;
+            }
+
+            .btn-facebook {
+                background-color: transparent;
+                color: #385185;
+                border: none;
+                font-weight: bold;
+                margin-top: 12px;
+                margin-bottom: 16px;
+            }
+
+            .divider-or {
+                position: relative;
+                text-align: center;
+                margin: 20px 0;
+            }
+
+            .divider-or::before,
+            .divider-or::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                width: 40%;
+                height: 1px;
+                background-color: #dbdbdb;
+            }
+
+            .divider-or::before {
+                left: 0;
+            }
+
+            .divider-or::after {
+                right: 0;
+            }
+
+            a.forgot-password,
+            a {
+                color: #00376b;
+                text-decoration: none;
+            }
+
+            .forgot-password {
+                margin-top: 12px;
+                font-size: 12px;
+                display: block;
+                text-align: center;
+            }
+
+            .signup-link {
+                background-color: white;
+                width: 350px;
+                padding: 10px;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                margin-top: 10px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-form">
+            <img
+                style="height: 51px; margin: 22px auto 20px; display: block"
+                src="https://www.instagram.com/static/images/web/mobile_nav_type_logo-2x.png/1b47f9d0e595.png"
+            />
+            <form>
+                <div class="form-floating">
+                    <input type="email" class="form-control" id="input_email" placeholder="name@example.com" />
+                    <label for="input_email">전화번호, 사용자 이름 또는 이메일</label>
+                </div>
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="input_password" placeholder="Password" />
+                    <label for="input_password">비밀번호</label>
+                </div>
+                <button id="login_button" type="submit" class="btn btn-primary">로그인</button>
+            </form>
+            <div class="divider-or">또는</div>
+            <button class="btn btn-facebook">Facebook으로 로그인</button>
+            <div style="text-align: center">
+                <a href="#" class="forgot-password">비밀번호를 잊으셨나요?</a>
+            </div>
+        </div>
+        <div class="signup-link">
+            <span>계정이 없으신가요? <a href="/user/join">가입하기</a></span>
+        </div>
+
+        <!-- 403 Forbidden Error Sol -->
+        <script>
+            const csrftoken = '{{ csrf_token }}';
+        </script>
+
+        <!-- 로그인 버튼을 눌렀을 때 -->
+        <script>
+            $('#login_button').on('click', (event) => {
+                event.preventDefault(); // 폼 제출 기본 동작 막기
+                console.log('로그인 버튼을 클릭했습니다.');
+
+                let email = $('#input_email').val();
+                let password = $('#input_password').val();
+
+                console.log('이메일 주소 :' + email + ', 비밀번호 :' + password);
+
+                $.ajax({
+                    url: '/user/login/',
+                    data: {
+                        email: email,
+                        password: password,
+                    },
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken }, // 403 Forbidden Error Sol
+                    success: function (data) {
+                        console.log('성공');
+                        alert('로그인을 성공했습니다.');
+                        location.href = '/'; // 로그인 성공 시 인덱스 페이지로 이동
+                    },
+                    error: function (request, status, error) {
+                        let data = JSON.parse(request.responseText);
+                        console.log(data.message);
+                        alert(data.message);
+                    },
+                });
+            });
+        </script>
+
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"
+        ></script>
+    </body>
+</html>

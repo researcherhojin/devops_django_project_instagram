@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        {% load static %}
+
+        <title>Instagram Clone</title>
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <!-- 구글 아이콘 (Material Symbols) -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+        <!-- Jquery -->
+        <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+
+        <style>
+            /****************************************
+      * Global Reset & Basic Setup
+      ****************************************/
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body {
+                width: 100%;
+                height: 100%;
+                /* 불필요한 수평 스크롤 방지 */
+                overflow-x: hidden;
+            }
+            body {
+                background-color: #fff; /* Instagram-like background (흰색) */
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                color: #262626;
+            }
+
+            /****************************************
+      * Left Navigation (fixed sidebar)
+      ****************************************/
+            .nav-left {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 250px; /* 왼쪽 사이드바 폭 */
+                height: 100vh;
+                border-right: 1px solid #dbdbdb;
+                background-color: #fff;
+                z-index: 999;
+                padding: 20px 12px;
+                display: flex;
+                flex-direction: column;
+            }
+            .nav-logo {
+                margin-bottom: 1.5rem;
+                padding-left: 8px;
+            }
+            .nav-logo img {
+                width: 103px;
+                height: auto;
+            }
+            .nav-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: auto;
+            }
+            .nav-item {
+                display: flex;
+                align-items: center;
+                padding: 10px 12px;
+                gap: 14px;
+                border-radius: 8px;
+                color: #000;
+                text-decoration: none;
+                font-size: 15px;
+            }
+            .nav-item:hover {
+                background-color: #f8f8f8;
+            }
+            .nav-item span.material-symbols-outlined {
+                font-size: 24px;
+            }
+            .nav-bottom {
+                margin-top: 12px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            /****************************************
+      * Main Wrapper (center + right)
+      ****************************************/
+            .main-wrapper {
+                margin-left: 250px; /* 사이드바 폭만큼 왼쪽 여백 */
+                width: calc(100% - 250px);
+                min-height: 100vh;
+                padding: 30px 20px;
+                display: flex;
+                gap: 32px;
+            }
+
+            /****************************************
+      * Center Content (Feed)
+      ****************************************/
+            .content {
+                max-width: 600px;
+                width: 100%;
+            }
+
+            /* Stories */
+            .stories {
+                background-color: #fff;
+                border: 1px solid #dbdbdb;
+                border-radius: 8px;
+                margin-bottom: 24px;
+                padding: 16px 0;
+            }
+            .stories-list {
+                display: flex;
+                gap: 16px;
+                padding: 0 16px;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            .stories-list::-webkit-scrollbar {
+                display: none;
+            }
+            .story {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                cursor: pointer;
+            }
+            .story-ring {
+                width: 66px;
+                height: 66px;
+                border-radius: 50%;
+                padding: 3px;
+                background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+                margin-bottom: 6px;
+            }
+            .story-photo {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                border: 2px solid #fff;
+                object-fit: cover;
+            }
+            .story-username {
+                font-size: 12px;
+                width: 66px;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* Post (feed) */
+            .post {
+                background-color: #fff;
+                border: 1px solid #dbdbdb;
+                border-radius: 8px;
+                margin-bottom: 24px;
+            }
+            .post-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 14px 16px;
+            }
+            .post-user {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .post-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            .post-username {
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .post-more {
+                background: none;
+                border: none;
+                cursor: pointer;
+            }
+            .post-img-container {
+                width: 100%;
+                background: #000; /* 이미지 로딩 전 배경색 */
+            }
+            .post-image {
+                width: 100%;
+                display: block;
+                object-fit: cover;
+            }
+            .post-actions {
+                padding: 8px 16px;
+            }
+            .post-buttons {
+                display: flex;
+                justify-content: space-between;
+            }
+            .buttons-left {
+                display: flex;
+                gap: 16px;
+            }
+            .action-button {
+                background: none;
+                border: none;
+                padding: 6px 0;
+                cursor: pointer;
+            }
+            .action-button span {
+                font-size: 24px;
+                color: #262626;
+            }
+            .post-caption {
+                padding: 0 16px 12px;
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            .post-caption .username {
+                font-weight: 600;
+                margin-right: 6px;
+            }
+            .post-caption .more {
+                color: #8e8e8e;
+                font-size: 12px;
+                cursor: pointer;
+            }
+            .like-section {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .like-count {
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            /****************************************
+      * Right Sidebar
+      ****************************************/
+            .sidebar {
+                width: 320px;
+                flex-shrink: 0;
+                display: flex;
+                flex-direction: column;
+                margin-top: 16px;
+            }
+            .user-info {
+                display: flex;
+                align-items: center;
+                margin-bottom: 16px;
+            }
+            .user-avatar {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                margin-right: 12px;
+                object-fit: cover;
+            }
+            .user-name {
+                font-weight: 600;
+                font-size: 14px;
+            }
+            .user-subtitle {
+                font-size: 14px;
+                color: #8e8e8e;
+            }
+
+            .suggestions {
+                margin-bottom: 16px;
+            }
+            .suggestions-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 8px;
+                padding: 0 8px;
+            }
+            .suggestions-title {
+                font-size: 14px;
+                color: #8e8e8e;
+                font-weight: 600;
+            }
+            .see-all {
+                font-size: 12px;
+                font-weight: 600;
+                color: #262626;
+                text-decoration: none;
+            }
+            .suggestion-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px;
+            }
+            .suggestion-user {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .suggestion-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            .suggestion-info {
+                font-size: 12px;
+            }
+            .suggestion-username {
+                font-weight: 600;
+            }
+            .suggestion-meta {
+                color: #8e8e8e;
+            }
+            .follow-button {
+                background: none;
+                border: none;
+                color: #0095f6;
+                font-weight: 600;
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            .footer {
+                margin-top: 16px;
+                font-size: 12px;
+                color: #c7c7c7;
+                line-height: 1.6;
+            }
+            .footer a {
+                color: #c7c7c7;
+                text-decoration: none;
+            }
+
+            /****************************************
+      * Responsive
+      ****************************************/
+            @media (max-width: 1100px) {
+                /* 우측 사이드바 숨기기(필요 시) */
+                .sidebar {
+                    display: none;
+                }
+                .main-wrapper {
+                    margin-left: 250px;
+                    width: calc(100% - 250px);
+                }
+            }
+            @media (max-width: 768px) {
+                /* 모바일에서 좌측 메뉴 숨기기 → 전체 폭 사용 */
+                .nav-left {
+                    display: none;
+                }
+                .main-wrapper {
+                    margin-left: 0;
+                    width: 100%;
+                    gap: 0;
+                    padding: 16px;
+                }
+                .content {
+                    max-width: 100%;
+                }
+            }
+
+            /****************************************
+      * modal style setting
+      ****************************************/
+            .modal_overlay {
+                width: 100%;
+                height: 100%;
+                position: fixed;
+                left: 0;
+                top: 0;
+                display: none; /* 최초에는 숨김 */
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(1.5px);
+                -webkit-backdrop-filter: blur(1.5px);
+                z-index: 9999; /* 다른 요소들보다 높은 값으로 설정 */
+            }
+
+            .modal_window {
+                background: white;
+                backdrop-filter: blur(13.5px);
+                -webkit-backdrop-filter: blur(13.5px);
+                border-radius: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                width: 800px;
+                height: 600px;
+                position: relative;
+                padding: 10px;
+            }
+
+            /****************************************
+      * close-button
+      ****************************************/
+            .close-button {
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                border-radius: 50%;
+                transition: background-color 0.2s;
+            }
+
+            .close-button:hover {
+                background-color: #f0f0f0;
+            }
+
+            /* profile_image style */
+            .box {
+                width: 70px;
+                height: 70px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-right: 10px;
+            }
+            .profile {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            /* 프로필 드롭다운 관련 스타일 추가 */
+            .dropdown {
+                position: relative;
+                display: inline-block;
+            }
+
+            /* 좋아요 버튼 스타일 */
+            .favorite {
+                transition: all 0.2s ease;
+            }
+            .favorite.active {
+                color: #ff3040 !important; /* Instagram 스타일의 빨간색 */
+                animation: likeAnimation 0.3s ease-in-out;
+            }
+
+            /* 좋아요 애니메이션 */
+            @keyframes likeAnimation {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.2);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            /* 북마크 버튼 스타일 */
+            .bookmark {
+                transition: all 0.2s ease;
+            }
+            .bookmark.active {
+                color: #0095f6 !important; /* Instagram 스타일의 파란색 */
+            }
+
+            /* 댓글 게시 버튼 호버 효과 */
+            .upload_reply {
+                cursor: pointer;
+                transition: opacity 0.2s ease;
+            }
+            .upload_reply:hover {
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- 403 Forbidden Error Sol -->
+        {% csrf_token %}
+
+        <script>
+            const csrftoken = '{{ csrf_token }}';
+        </script>
+
+        <!-- Left Navigation -->
+        <nav class="nav-left">
+            <!-- 인스타그램 로고 -->
+            <a class="nav-logo" href="{% url 'index' %}">
+                <img
+                    src="https://i.namu.wiki/i/Klgx94WBnXNxrBU6vIxEOR18wYX9Xgca09FVQ5Bxik1VPkDqDz45tXJmARshWgbKUBAGQezFSeBLGeu4TqmEI04mbnlZvy-XQbMgn7Pw7F6zDPPpY2GKUAnHakNTAd-w92Ke7PM4iT761GFRSwTAHA.svg"
+                    alt="Instagram"
+                />
+            </a>
+            <div class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item"> <span class="material-symbols-outlined">home</span>홈 </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">search</span>검색 </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">explore</span>탐색 탭 </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">movie</span>릴스 </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">send</span>메시지 </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">favorite</span>알림 </a>
+                <!-- add_box에 id 값 추가 -->
+                <a href="#" id="nav_bar_add_box" class="nav-item">
+                    <span class="material-symbols-outlined">add_box</span>만들기
+                </a>
+                <a href="/content/profile" class="nav-item">
+                    <span class="material-symbols-outlined">account_circle</span>프로필
+                </a>
+            </div>
+            <div class="nav-bottom">
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">message</span>Threads </a>
+                <a href="#" class="nav-item"> <span class="material-symbols-outlined">menu</span>더 보기 </a>
+            </div>
+        </nav>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Center Content (Feed) -->
+            <section class="content">
+                <!-- Stories -->
+                <div class="stories">
+                    <div class="stories-list">
+                        <!-- Story #1 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://pbs.twimg.com/profile_images/1874558173962481664/8HSTqIlD_400x400.jpg"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Elon Musk</div>
+                        </div>
+                        <!-- Story #2 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://img1.daumcdn.net/thumb/C500x500/?fname=http://t1.daumcdn.net/brunch/service/user/2YH6/image/7kmtv0190Fu60wySRrrBTt_z_Tc.png"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">멋쟁이사자처럼</div>
+                        </div>
+                        <!-- Story #3 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://i.namu.wiki/i/SqFwJEfWPrWhP8QZVZ0l8GU6lu0ceGC7QOMd1Sk_RfuxAwsHjPOmInsP4N46Kz-4ErzHvqOcBWAoBcWS1153adsPU-OmKa1oFkkEHtl2Dk2u3Xk5d2qNU-2pS-fLkwxbKL_T44nQKteKle35UDrvYA.webp"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Steve Jobs</div>
+                        </div>
+                        <!-- Story #4 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://i.namu.wiki/i/4nf3GF-ePr0_nzj9C2p6fJ5PuNSpQFG-A5zGCdsbVirTm3a54GYHpPzVhsgvSVyPsRHkOtFXjOZd1QL0bfQyinZUNZZ8dS9pwEZHQ0TNZUvyPAVn4xVrFD1rM_L9Xcq4ncHsvhKuIR2El3duO9eVwQ.webp"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Mark Zuckerberg</div>
+                        </div>
+                        <!-- Story #5 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://i.namu.wiki/i/Fq03GpmAIEnwvlfEfYyOMkQXg1tHhXeq3i3coZFrBhLvTuo6iE5Sh-JxnOLRwhKFynT1tMBQaS0mUtBtp9tqgRBRAztMo7HJ0akB0YylD4DPOsz_FcNAFbA-9O6C1_Q_YvxoeihK-mCpGBq1x2eSdA.webp"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Bill Gates</div>
+                        </div>
+                        <!-- Story #6 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://i.namu.wiki/i/QxM8Rf7YsztObrep3IzwBz_IUismgOTcCFI4BxMUM0YuqvnucA5lnhNCgYzThbw3QgmsUmUV4frCLMjicfvnCsDfkTmJAc1whAj1uKfnaUjxLfcjEthQa_4Xv7CZMyo07Hkj6Fn-WyH0wLJd72gAAQ.webp"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Warren Buffett</div>
+                        </div>
+                        <!-- Story #7 -->
+                        <div class="story">
+                            <div class="story-ring">
+                                <img
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRj_JdIMj8eQ3AAUqYMwLYgMX-0qnyHWnJjrg&s"
+                                    alt="Story"
+                                    class="story-photo"
+                                />
+                            </div>
+                            <div class="story-username">Jude Friday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 피드가 없을 수도 있으니, feeds가 비어있을 경우 조건 처리 예시 -->
+                {% if feeds %} {% for feed in feeds %}
+                <article class="post">
+                    <div class="post-header">
+                        <div class="post-user">
+                            <!-- 피드 주인의 프로필 이미지 -->
+                            {% if feed.profile_image %}
+                            <img
+                                src="{% get_media_prefix %}{{ feed.profile_image }}"
+                                alt="Avatar"
+                                class="post-avatar"
+                            />
+                            {% else %}
+                            <!-- 프로필 이미지가 없을 경우 기본 이미지 예시 -->
+                            <img src="{% static 'images/default_profile.png' %}" alt="Avatar" class="post-avatar" />
+                            {% endif %}
+
+                            <!-- 피드 주인의 닉네임 -->
+                            <span class="post-username"> {{ feed.nickname }} </span>
+                        </div>
+                        <button class="post-more">
+                            <span class="material-symbols-outlined">more_horiz</span>
+                        </button>
+                    </div>
+
+                    <div class="post-img-container">
+                        <img src="{% get_media_prefix %}{{ feed.image }}" alt="Post" class="post-image" />
+                    </div>
+
+                    <!-- 피드 액션 섹션 -->
+                    <div class="post-actions">
+                        <div class="post-buttons">
+                            <div class="buttons-left">
+                                <!-- 좋아요 버튼 -->
+                                <button class="action-button">
+                                    <span
+                                        id="favorite_{{ feed.id }}"
+                                        feed_id="{{ feed.id }}"
+                                        class="favorite material-symbols-outlined {% if feed.is_liked %}active{% endif %}"
+                                    >
+                                        {% if feed.is_liked %}favorite{% else %}favorite_border{% endif %}
+                                    </span>
+                                </button>
+                                <button class="action-button">
+                                    <span class="material-symbols-outlined">chat_bubble_outline</span>
+                                </button>
+                                <button class="action-button">
+                                    <span class="material-symbols-outlined">send</span>
+                                </button>
+                            </div>
+                            <!-- 북마크 버튼 -->
+                            <button class="action-button">
+                                <span
+                                    id="bookmark_{{ feed.id }}"
+                                    feed_id="{{ feed.id }}"
+                                    class="bookmark material-symbols-outlined {% if feed.is_marked %}active{% endif %}"
+                                >
+                                    {% if feed.is_marked %}bookmark{% else %}bookmark_border{% endif %}
+                                </span>
+                            </button>
+                        </div>
+                        <!-- 좋아요 수 표시 -->
+                        <div class="like-count">
+                            좋아요
+                            <span id="like_count_{{ feed.id }}">{{ feed.like_count }}</span>개
+                        </div>
+                    </div>
+
+                    <!-- 본문 -->
+                    <div class="post-caption">
+                        <span class="username">{{ feed.nickname }}</span>
+                        {{ feed.content }}
+                    </div>
+
+                    <!-- 댓글 리스트 -->
+                    <div id="reply_list_{{ feed.id }}" class="post-replies">
+                        {% for reply in feed.reply_list %}
+                        <div class="reply-item" style="padding: 0 16px; margin-bottom: 4px; font-size: 14px">
+                            <span class="username" style="font-weight: 600; margin-right: 6px"
+                                >{{ reply.nickname }}</span
+                            >
+                            <span class="reply-content">{{ reply.reply_content }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- 댓글 입력창 -->
+                    <div style="display: flex; flex-direction: row; align-items: center; border-top: solid 1px gray">
+                        <input
+                            id="reply_{{ feed.id }}"
+                            type="text"
+                            class="form-control"
+                            style="box-shadow: none; border: none; outline: none"
+                            placeholder="댓글 달기.."
+                        />
+                        <div
+                            feed_id="{{ feed.id }}"
+                            class="upload_reply"
+                            style="width: 50px; color: cornflowerblue; font-weight: bold; text-align: center"
+                        >
+                            게시
+                        </div>
+                    </div>
+                </article>
+                {% endfor %} {% else %}
+                <p>아직 게시물이 없습니다. 새 게시물을 작성해보세요!</p>
+                {% endif %}
+            </section>
+
+            <!-- Right Sidebar -->
+            <aside class="sidebar d-none d-xl-flex flex-column">
+                <!-- 로그인한 사용자의 프로필 표시 -->
+                {% if user.is_authenticated %}
+                <div class="user-info d-flex align-items-center">
+                    <!-- User profile section (드롭다운)-->
+                    <div class="dropdown">
+                        <div
+                            class="box"
+                            role="button"
+                            id="profileDropdown"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            <!-- 프로필 이미지가 없는 경우 기본 이미지로 대체 -->
+                            {% if user.profile_image %}
+                            <img
+                                class="profile"
+                                src="{% get_media_prefix %}{{ user.profile_image }}"
+                                alt="프로필 이미지"
+                            />
+                            {% else %}
+                            <img class="profile" src="{% static 'images/default_profile.png' %}" alt="프로필 이미지" />
+                            {% endif %}
+                        </div>
+
+                        <!-- 드롭다운 메뉴 -->
+                        <ul class="dropdown-menu" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item" href="/content/profile">프로필</a>
+                            </li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <a class="dropdown-item" href="/user/logout">로그아웃</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 사용자 정보 -->
+                    <div style="margin-left: 10px; text-align: left">
+                        <!-- 닉네임, 이름(또는 username) -->
+                        <div style="font-weight: bold">{{ user.nickname|default:user.username }}</div>
+                        <div style="color: gray">{{ user.name|default:"로그인한 유저" }}</div>
+                    </div>
+                </div>
+                {% else %}
+                <!-- 미로그인 상태라면 로그인/회원가입 링크 등을 제공할 수도 있음 -->
+                <div>
+                    <a href="{% url 'login' %}">로그인</a> /
+                    <a href="{% url 'signup' %}">회원가입</a>
+                </div>
+                {% endif %}
+
+                <div class="suggestions">
+                    <div class="suggestions-header">
+                        <span class="suggestions-title">회원님을 위한 추천</span>
+                        <a href="#" class="see-all">모두 보기</a>
+                    </div>
+                    <!-- 나머지 추천 섹션 내용 -->
+
+                    <!-- Tesla -->
+                    <div class="suggestion-item">
+                        <div class="suggestion-user">
+                            <img
+                                src="https://cdn.pixabay.com/photo/2022/08/25/00/32/tesla-logo-7408969_640.png"
+                                alt="teslamotors"
+                                class="suggestion-avatar"
+                            />
+                            <div class="suggestion-info">
+                                <div class="suggestion-username">teslamotors</div>
+                                <div class="suggestion-meta">Tesla</div>
+                            </div>
+                        </div>
+                        <button class="follow-button">팔로우</button>
+                    </div>
+
+                    <!-- 손흥민 -->
+                    <div class="suggestion-item">
+                        <div class="suggestion-user">
+                            <img
+                                src="https://i.namu.wiki/i/gV_pcWGwjszmR7I8ekwuH65PR34--6iOrKff4YkZceExXVnAHstASYyMsKZ4AKBMhTOqe2yWl9WC5KGOykjlKem5XQMqXkmnhCrbshqFknUa3dQ-HDI6kLdnWz-eGvXUOVL5wzeXzxnlL0sliLU_4w.webp"
+                                alt="hm_son7"
+                                class="suggestion-avatar"
+                            />
+                            <div class="suggestion-info">
+                                <div class="suggestion-username">hm_son7</div>
+                                <div class="suggestion-meta">Son HeungMin(손흥민)🇰🇷</div>
+                            </div>
+                        </div>
+                        <button class="follow-button">팔로우</button>
+                    </div>
+
+                    <!-- likelion -->
+                    <div class="suggestion-item">
+                        <div class="suggestion-user">
+                            <img
+                                src="https://img1.daumcdn.net/thumb/C500x500/?fname=http://t1.daumcdn.net/brunch/service/user/2YH6/image/7kmtv0190Fu60wySRrrBTt_z_Tc.png"
+                                alt="likelion"
+                                class="suggestion-avatar"
+                            />
+                            <div class="suggestion-info">
+                                <div class="suggestion-username">likelion.official</div>
+                                <div class="suggestion-meta">멋쟁이사자처럼</div>
+                            </div>
+                        </div>
+                        <button class="follow-button">팔로우</button>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    소개 · 도움말 · 홍보센터 · API · 채용 정보
+                    <br />
+                    개인정보처리방침 · 약관 · 위치 · 언어 · Meta Verified
+                    <br /><br />
+                    © 2025 INSTAGRAM FROM META
+                </div>
+            </aside>
+        </div>
+
+        <!-- first_modal -->
+        <div id="first_modal" class="modal_overlay">
+            <div class="modal_window">
+                <div style="display: flex; flex-direction: row; justify-content: space-between">
+                    <div style="width: 40px"></div>
+                    <div>새 이미지 업로드</div>
+                    <!-- close icon에 class & id 추가 & style 제거 -->
+                    <div class="close-button">
+                        <span id="close_icon" class="material-symbols-outlined">close</span>
+                    </div>
+                </div>
+
+                <div
+                    class="img_upload_space"
+                    style="border-top: solid 1px gray; width: 778px; height: 540px; margin-top: 10px"
+                ></div>
+            </div>
+        </div>
+
+        <!-- second_modal -->
+        <div id="second_modal" class="modal_overlay">
+            <div class="modal_window">
+                <div style="display: flex; flex-direction: row; justify-content: space-between">
+                    <div style="width: 40px"></div>
+                    <div>새 게시물</div>
+                    <!-- close icon에 class & id 추가 & style 제거 -->
+                    <div class="close-button">
+                        <span id="close_icon" class="material-symbols-outlined">close</span>
+                    </div>
+                </div>
+
+                <div style="border-top: solid 1px gray; display: flex; flex-direction: row; margin-top: 10px">
+                    <!-- 왼쪽: 이미지 미리보기 영역 -->
+                    <div class="img_upload_space" style="width: 500px; height: 540px">
+                        <div class="upload-guide" style="text-align: center; color: #8e8e8e">
+                            <span class="material-symbols-outlined" style="font-size: 48px">add_photo_alternate</span>
+                            <p>사진을 여기에 끌어다 놓으세요</p>
+                        </div>
+                    </div>
+                    <!-- 오른쪽: 글 작성 영역 -->
+                    <div style="border-left: solid 1px gray">
+                        <div>
+                            <textarea
+                                id="input_feed_content"
+                                class="form-control"
+                                style="width: 276px; height: 400px"
+                                rows="5"
+                                placeholder="문구를 입력하세요..."
+                            ></textarea>
+                        </div>
+                        <button id="feed_create_button" type="button" class="btn btn-primary" style="width: 100%">
+                            공유하기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- When add_box clicked -->
+        <script>
+            // 전역 변수로 업로드된 파일을 저장
+            let uploadedFile;
+            let files; // 드롭한 파일을 담을 전역 변수
+
+            // 만들기(+) 버튼 클릭 시 모달 창 표시
+            $('#nav_bar_add_box').click(function (e) {
+                e.preventDefault(); // 페이지 이동 방지
+                $('#first_modal').css({
+                    display: 'flex',
+                });
+                $(document.body).css({
+                    overflow: 'hidden', // 배경 스크롤 방지
+                });
+            });
+
+            // 모달 창을 닫는 함수
+            function closeModal() {
+                $('.modal_overlay').css({
+                    display: 'none',
+                });
+                $(document.body).css({
+                    overflow: 'auto',
+                });
+
+                // 입력 필드와 이미지 초기화
+                $('#input_feed_content').val('');
+                $('.img_upload_space').css({
+                    'background-image': 'none',
+                    'background-color': '#fafafa',
+                });
+                $('.upload-guide').show();
+                uploadedFile = null;
+                files = null;
+            }
+
+            // close 버튼 이벤트
+            $('.close-button').click(function () {
+                closeModal();
+            });
+
+            // 공유하기 버튼 클릭 이벤트
+            $('#feed_create_button').click(function () {
+                // 파일이 없을 경우 체크
+                if (!files || files.length === 0) {
+                    alert('이미지를 선택해주세요.');
+                    return;
+                }
+
+                let file = files[0];
+                let content = $('#input_feed_content').val();
+
+                // 이미지 파일 체크
+                if (!file.type.match(/image.*/)) {
+                    alert('이미지 파일만 업로드할 수 있습니다.');
+                    return;
+                }
+
+                let fd = new FormData();
+                fd.append('file', file);
+                fd.append('content', content);
+
+                $.ajax({
+                    url: '/content/upload',
+                    data: fd,
+                    method: 'POST',
+                    processData: false,
+                    contentType: false,
+                    headers: { 'X-CSRFToken': csrftoken },
+                    success: function (data) {
+                        console.log('업로드 성공');
+                        location.reload();
+                    },
+                    error: function (request, status, error) {
+                        console.error('Error:', error);
+                        alert('업로드 중 오류가 발생했습니다.');
+                    },
+                });
+            });
+
+            // 드래그 앤 드롭 이벤트 설정
+            $('.img_upload_space').on('dragover', dragOver).on('dragleave', dragOver).on('drop', uploadFiles);
+
+            // 드래그 오버 이벤트 처리
+            function dragOver(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                if (e.type == 'dragover') {
+                    $(e.target).css({
+                        'background-color': 'rgba(0, 0, 0, 0.1)',
+                        'outline-offset': '-20px',
+                    });
+                } else {
+                    $(e.target).css({
+                        'background-color': '#fafafa',
+                        'outline-offset': '-10px',
+                    });
+                }
+            }
+
+            // 파일 업로드 처리
+            function uploadFiles(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                e.dataTransfer = e.originalEvent.dataTransfer;
+                files = e.target.files || e.dataTransfer.files;
+
+                // 파일 개수 확인
+                if (files.length > 1) {
+                    alert('하나의 이미지만 업로드할 수 있습니다.');
+                    return;
+                }
+
+                // 이미지 파일 확인
+                if (files[0].type.match(/image.*/)) {
+                    uploadedFile = files[0]; // 파일 저장
+                    const imageUrl = window.URL.createObjectURL(files[0]);
+
+                    // 첫 번째 모달을 숨기고 두 번째 모달 표시
+                    $('#first_modal').css({ display: 'none' });
+                    $('#second_modal').css({ display: 'flex' });
+
+                    // 이미지 미리보기 설정
+                    $('.img_upload_space').css({
+                        'background-image': `url(${imageUrl})`,
+                        'background-size': 'contain',
+                        'background-position': 'center',
+                        'background-repeat': 'no-repeat',
+                        'background-color': '#fafafa',
+                        outline: 'none',
+                    });
+
+                    // 가이드 메시지 숨기기
+                    $('.upload-guide').hide();
+                } else {
+                    alert('이미지 파일만 업로드할 수 있습니다.');
+                    return;
+                }
+            }
+
+            // 모달 외부 영역 클릭 시 닫기
+            $('.modal_overlay').click(function (e) {
+                // e.target === this (즉, 모달 영역 바깥쪽을 클릭했을 때만 닫기)
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+
+            // 댓글달기 게시 버튼 클릭 시 진행되는 로직
+            $('.upload_reply').click(function (event) {
+                let feed_id = event.target.attributes.getNamedItem('feed_id').value;
+                let reply_id = 'reply_' + feed_id;
+                let reply_content = $('#' + reply_id).val();
+
+                if (reply_content.length <= 0) {
+                    alert('댓글을 입력하세요');
+                    return 0;
+                }
+
+                $.ajax({
+                    url: '/content/reply',
+                    data: {
+                        feed_id: feed_id,
+                        reply_content: reply_content,
+                    },
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    success: function (data) {
+                        console.log('성공');
+                        alert('댓글 성공');
+                        // 새 댓글을 동적으로 추가 (리로드 없이 추가하고 싶다면 아래처럼)
+                        $('#reply_list_' + feed_id).append(
+                            "<div style='margin: 0 20px;text-align: left;font-size: 14px; margin-bottom:4px;'>" +
+                                '<b>{{ user.nickname|default:user.username }}</b> ' +
+                                reply_content +
+                                '</div>'
+                        );
+                        // location.reload(); // 전체 리로드를 하려면 주석 해제
+                    },
+                    error: function (request, status, error) {
+                        console.log('에러');
+                    },
+                    complete: function () {
+                        console.log('완료');
+                        $('#' + reply_id).val('');
+                    },
+                });
+            });
+
+            // 좋아요 버튼 클릭 이벤트
+            $(document).on('click', '.favorite', function () {
+                let feed_id = $(this).attr('feed_id');
+                let button = $(this);
+
+                $.ajax({
+                    url: '/content/like',
+                    data: {
+                        feed_id: feed_id,
+                    },
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    success: function (data) {
+                        let like_count = data.like_count;
+                        $('#like_count_' + feed_id).text(like_count);
+
+                        button.toggleClass('active');
+                        if (button.hasClass('active')) {
+                            button.text('favorite');
+                        } else {
+                            button.text('favorite_border');
+                        }
+                    },
+                });
+            });
+
+            // 북마크 버튼 클릭 이벤트
+            $(document).on('click', '.bookmark', function () {
+                let feed_id = $(this).attr('feed_id');
+                let button = $(this);
+
+                $.ajax({
+                    url: '/content/bookmark',
+                    data: {
+                        feed_id: feed_id,
+                    },
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrftoken },
+                    success: function (data) {
+                        button.toggleClass('active');
+                        if (button.hasClass('active')) {
+                            button.text('bookmark');
+                        } else {
+                            button.text('bookmark_border');
+                        }
+                    },
+                });
+            });
+        </script>
+
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    </body>
+</html>
